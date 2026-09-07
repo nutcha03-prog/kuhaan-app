@@ -18,11 +18,6 @@ import {
     measurementId: "G-GWRLG21LKN"
   };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-};
-
 const fb = initializeApp(firebaseConfig);
 const db = getFirestore(fb);
 

@@ -49,28 +49,77 @@
   </div>
 
   <!-- ===================== หน้าแอปหลัก ===================== -->
-  <div id="app-screen">
-    <div class="hero">
-      <div class="room-label" id="room-label"></div>
-      <div class="balance-line" id="balance-line">กำลังโหลด...</div>
-      <div class="balance-amount" id="balance-amount">฿0</div>
+  <div id="app-screen" class="active">
+
+  <header class="app-header">
+    <div>
+      <h1>💑 คู่หาร</h1>
+      <p>ค่าใช้จ่ายของเราสองคน</p>
+    </div>
+  </header>
+
+  <section class="finance-card">
+
+    <div class="month-label">
+      กันยายน 2026 · Shared Expenses
     </div>
 
-    <div class="list-wrap">
-      <div class="list-header">
-        <h2>รายการค่าใช้จ่าย</h2>
-        <button id="change-room-btn" class="delete-btn" style="font-size:0.8rem;">เปลี่ยนห้อง</button>
-      </div>
-
-      <div id="empty-state" class="empty-state" style="display:none;">
-        ยังไม่มีรายการ<br/>กดปุ่ม + ด้านล่างเพื่อเริ่มจดรายการแรก
-      </div>
-
-      <div id="expense-list"></div>
+    <div class="total-title">
+      ค่าใช้จ่ายเดือนนี้
     </div>
 
-    <button id="fab-add" class="fab">+ เพิ่มรายการ</button>
-  </div>
+    <div class="total-amount">
+      <span id="balance-amount">฿0</span>
+    </div>
+
+    <div class="couple-grid">
+
+      <div class="person-card">
+        <small data-name-slot="a">คนที่ 10</small>
+        <strong id="person-a-total">฿0</strong>
+      </div>
+
+      <div class="person-card">
+        <small data-name-slot="b">คนที่ 2</small>
+        <strong id="person-b-total">฿0</strong>
+      </div>
+
+    </div>
+
+    <div class="debt-card">
+      <div id="balance-line">
+        กำลังคำนวณ...
+      </div>
+    </div>
+
+  </section>
+
+  <section class="expense-section">
+
+    <div class="section-title">
+      รายการล่าสุด
+    </div>
+
+    <div id="expense-list"></div>
+
+    <div id="empty-state">
+      ยังไม่มีรายการค่าใช้จ่าย
+    </div>
+
+  </section>
+
+  <button id="fab-add" class="fab">
+    +
+  </button>
+
+  <nav class="bottom-nav">
+    <button class="active">🏠</button>
+    <button>📋</button>
+    <button>📊</button>
+    <button id="change-room-btn">⚙️</button>
+  </nav>
+
+</div>
 
   <!-- ===================== ฟอร์มเพิ่มรายการ (bottom sheet) ===================== -->
   <div id="sheet-backdrop" class="sheet-backdrop">
