@@ -127,14 +127,28 @@ async function enterRoom() {
   document.querySelectorAll('[data-name-slot="b"]').forEach((n) => (n.textContent = room.nameB));
 
   const expensesRef = collection(db, "rooms", state.roomId, "expenses");
-  const q = query(expensesRef, orderBy("createdAt", "desc"));
-  onSnapshot(q, (snap) => {
-    state.expenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+const q = query(expensesRef, orderBy("createdAt", "desc"));
+
+onSnapshot(
+  q,
+  (snap) => {
+    console.log("โหลดรายการ:", snap.docs.length);
+
+    state.expenses = snap.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
+
+    console.log("ข้อมูลทั้งหมด", state.expenses);
+
     renderExpenses();
     renderMonthSummary();
     renderPending();
-  });
-}
+  },
+  (err) => {
+    console.error("Firestore Error:", err);
+  }
+);
 
 function currentMonthLabel() {
   return new Intl.DateTimeFormat("th-TH-u-ca-gregory", { month: "long", year: "numeric" }).format(new Date());
@@ -155,20 +169,38 @@ function shareOf(exp) {
 // 7) สรุปยอดเดือนนี้: รวมทั้งหมด + แยกตามคนจ่าย + progress bar
 // ===================================================================
 function renderMonthSummary() {
-  let total = 0, totalA = 0, totalB = 0;
+  let total = 0;
+  let totalA = 0;
+  let totalB = 0;
+
+  console.log("state.expenses =", state.expenses);
+
   for (const exp of state.expenses) {
-    if (!inThisMonth(exp)) continue;
     const amt = Number(exp.amount) || 0;
+
     total += amt;
-    if (exp.paidBy === "a") totalA += amt; else totalB += amt;
+
+    if (exp.paidBy === "a") {
+      totalA += amt;
+    } else {
+      totalB += amt;
+    }
   }
 
-  el("month-total-amount").textContent = `฿${Math.round(total).toLocaleString()}`;
-  el("person-a-total").textContent = `฿${Math.round(totalA).toLocaleString()}`;
-  el("person-b-total").textContent = `฿${Math.round(totalB).toLocaleString()}`;
+  console.log("รวม =", total);
 
-  const pctA = total > 0 ? Math.round((totalA / total) * 100) : 0;
-  const pctB = total > 0 ? Math.round((totalB / total) * 100) : 0;
+  el("month-total-amount").textContent =
+    `฿${total.toLocaleString()}`;
+
+  el("person-a-total").textContent =
+    `฿${totalA.toLocaleString()}`;
+
+  el("person-b-total").textContent =
+    `฿${totalB.toLocaleString()}`;
+
+  const pctA = total > 0 ? (totalA / total) * 100 : 0;
+  const pctB = total > 0 ? (totalB / total) * 100 : 0;
+
   el("progress-a").style.width = `${pctA}%`;
   el("progress-b").style.width = `${pctB}%`;
 }
@@ -185,6 +217,7 @@ function renderPending() {
     else { amtB += share; countB += 1; }
   }
 
+  
   el("pending-a-amount").textContent = `฿${Math.round(amtA).toLocaleString()}`;
   el("pending-a-count").textContent = countA === 0 ? "ไม่มีรายการค้าง" : `${countA} รายการยังไม่เคลียร์`;
   el("pending-b-amount").textContent = `฿${Math.round(amtB).toLocaleString()}`;
