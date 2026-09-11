@@ -149,6 +149,7 @@ onSnapshot(
     console.error("Firestore Error:", err);
   }
 );
+}
 
 function currentMonthLabel() {
   return new Intl.DateTimeFormat("th-TH-u-ca-gregory", { month: "long", year: "numeric" }).format(new Date());
