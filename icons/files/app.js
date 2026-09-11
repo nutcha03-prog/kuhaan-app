@@ -5,36 +5,23 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
   getFirestore, collection, doc, setDoc, addDoc, onSnapshot,
-  query, orderBy, deleteDoc, updateDoc, getDoc,
+  query, orderBy, deleteDoc, getDoc,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAAy_EwrHSGcQGFtqaffQ3cmrbAeNc0DMw",
-    authDomain: "app-hann.firebaseapp.com",
-    projectId: "app-hann",
-    storageBucket: "app-hann.firebasestorage.app",
-    messagingSenderId: "546410969266",
-    appId: "1:546410969266:web:e450067079cdbbf0a5f1ab",
-    measurementId: "G-GWRLG21LKN"
-  };
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
 
 const fb = initializeApp(firebaseConfig);
 const db = getFirestore(fb);
 
 // ===================================================================
-// 2) หมวดหมู่ค่าใช้จ่าย (ไอคอน + สีพื้นหลัง)
-// ===================================================================
-const CATEGORIES = {
-  dining:     { icon: "🍽️", bg: "#FFF1C9" },
-  home:       { icon: "🧹", bg: "#DCEAFB" },
-  utilities:  { icon: "📶", bg: "#E1F2E8" },
-  pets:       { icon: "🐾", bg: "#FBE1E6" },
-  shopping:   { icon: "🛍️", bg: "#E7E1FB" },
-  other:      { icon: "📦", bg: "#E7ECEA" },
-};
-
-// ===================================================================
-// 3) State + local storage (จำห้อง/ชื่อไว้ ไม่ต้องพิมพ์ใหม่ทุกครั้ง)
+// 2) State + local storage (จำห้อง/ชื่อไว้ ไม่ต้องพิมพ์ใหม่ทุกครั้ง)
 // ===================================================================
 let state = {
   roomId: localStorage.getItem("kuhaan_room") || "",
@@ -47,23 +34,7 @@ let state = {
 const el = (id) => document.getElementById(id);
 
 // ===================================================================
-// 4) แท็บ "เข้าห้องเดิม" / "สร้างห้องใหม่" บนหน้าตั้งค่า
-// ===================================================================
-document.querySelectorAll(".tab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-    const isCreate = btn.dataset.tab === "create";
-    el("name-fields").classList.toggle("hidden", !isCreate);
-    el("setup-submit").textContent = isCreate ? "สร้างห้อง" : "เข้าห้อง";
-    el("setup-note").textContent = isCreate
-      ? "ตั้งชื่อทั้งสองคนไว้ก่อน แล้วส่งรหัสห้องนี้ให้แฟนมาเข้าที่แท็บ \"เข้าห้องเดิม\""
-      : "กรอกรหัสห้องที่แฟนตั้งไว้ ระบบจะดึงชื่อที่ตั้งไว้ตั้งแต่ตอนสร้างห้องมาให้เอง";
-  });
-});
-
-// ===================================================================
-// 5) หน้าตั้งค่าห้อง
+// 3) หน้าตั้งค่าห้อง (ครั้งแรกที่เปิด หรือกด "เปลี่ยนห้อง")
 // ===================================================================
 el("setup-form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -105,7 +76,7 @@ el("change-room-btn").addEventListener("click", () => {
 });
 
 // ===================================================================
-// 6) เข้าห้อง: subscribe ข้อมูลห้อง + รายการค่าใช้จ่ายแบบ real-time
+// 4) เข้าห้อง: subscribe ข้อมูลห้อง + รายการค่าใช้จ่ายแบบ real-time
 // ===================================================================
 async function enterRoom() {
   const roomRef = doc(db, "rooms", state.roomId);
@@ -120,7 +91,7 @@ async function enterRoom() {
 
   el("setup-screen").classList.add("hidden");
   el("app-screen").classList.add("active");
-  el("app-subtitle").textContent = `ห้อง: ${state.roomId}`;
+  el("app-subtitle").textContent = `ห้อง: ${state.roomId} · ${room.nameA} & ${room.nameB}`;
   el("month-label").textContent = currentMonthLabel();
 
   document.querySelectorAll('[data-name-slot="a"]').forEach((n) => (n.textContent = room.nameA));
@@ -131,30 +102,50 @@ async function enterRoom() {
   onSnapshot(q, (snap) => {
     state.expenses = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     renderExpenses();
+    renderBalance();
     renderMonthSummary();
-    renderPending();
   });
 }
 
 function currentMonthLabel() {
+  // บังคับปฏิทินสากล (ค.ศ.) ไม่ใช้ พ.ศ. เพื่อให้ตรงกับปีที่บันทึกไว้ในระบบ
   return new Intl.DateTimeFormat("th-TH-u-ca-gregory", { month: "long", year: "numeric" }).format(new Date());
 }
 
-function inThisMonth(exp) {
-  const now = new Date();
-  const d = new Date(exp.createdAt);
-  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-}
+// ===================================================================
+// 5) คำนวณยอดค้าง — netA บวก = B ค้าง A, ลบ = A ค้าง B
+//    (คิดจากรายการทั้งหมดตลอดเวลา ไม่ใช่แค่เดือนนี้ เพราะหนี้ค้างข้ามเดือนได้)
+// ===================================================================
+function renderBalance() {
+  let netA = 0;
+  for (const exp of state.expenses) {
+    const amt = Number(exp.amount) || 0;
+    const share = exp.split === "full" ? amt : amt / 2;
+    netA += exp.paidBy === "a" ? share : -share;
+  }
 
-function shareOf(exp) {
-  const amt = Number(exp.amount) || 0;
-  return exp.split === "full" ? amt : amt / 2;
+  const balanceEl = el("balance-line");
+  const rounded = Math.round(Math.abs(netA));
+
+  if (rounded === 0) {
+    balanceEl.innerHTML = "เคลียร์ยอดกันพอดี ไม่มีใครค้างใคร 🎉";
+  } else if (netA > 0) {
+    balanceEl.innerHTML = `<strong data-name-slot="b">${state.nameB}</strong> ค้าง <strong data-name-slot="a">${state.nameA}</strong> อยู่ ฿${rounded.toLocaleString()}`;
+  } else {
+    balanceEl.innerHTML = `<strong data-name-slot="a">${state.nameA}</strong> ค้าง <strong data-name-slot="b">${state.nameB}</strong> อยู่ ฿${rounded.toLocaleString()}`;
+  }
 }
 
 // ===================================================================
-// 7) สรุปยอดเดือนนี้: รวมทั้งหมด + แยกตามคนจ่าย + progress bar
+// 6) สรุปยอดของเดือนนี้ — รวมทั้งหมด + แยกตามคนจ่าย
 // ===================================================================
 function renderMonthSummary() {
+  const now = new Date();
+  const inThisMonth = (exp) => {
+    const d = new Date(exp.createdAt);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  };
+
   let total = 0, totalA = 0, totalB = 0;
   for (const exp of state.expenses) {
     if (!inThisMonth(exp)) continue;
@@ -166,42 +157,11 @@ function renderMonthSummary() {
   el("month-total-amount").textContent = `฿${Math.round(total).toLocaleString()}`;
   el("person-a-total").textContent = `฿${Math.round(totalA).toLocaleString()}`;
   el("person-b-total").textContent = `฿${Math.round(totalB).toLocaleString()}`;
-
-  const pctA = total > 0 ? Math.round((totalA / total) * 100) : 0;
-  const pctB = total > 0 ? Math.round((totalB / total) * 100) : 0;
-  el("progress-a").style.width = `${pctA}%`;
-  el("progress-b").style.width = `${pctB}%`;
 }
 
 // ===================================================================
-// 8) การ์ด "ค้างรับ" ต่อคน — นับจากรายการที่ยังไม่ได้กดติ๊กว่าเคลียร์แล้ว
+// 7) แสดงรายการค่าใช้จ่าย
 // ===================================================================
-function renderPending() {
-  let amtA = 0, countA = 0, amtB = 0, countB = 0;
-  for (const exp of state.expenses) {
-    if (exp.settled) continue;
-    const share = shareOf(exp);
-    if (exp.paidBy === "a") { amtA += share; countA += 1; }
-    else { amtB += share; countB += 1; }
-  }
-
-  el("pending-a-amount").textContent = `฿${Math.round(amtA).toLocaleString()}`;
-  el("pending-a-count").textContent = countA === 0 ? "ไม่มีรายการค้าง" : `${countA} รายการยังไม่เคลียร์`;
-  el("pending-b-amount").textContent = `฿${Math.round(amtB).toLocaleString()}`;
-  el("pending-b-count").textContent = countB === 0 ? "ไม่มีรายการค้าง" : `${countB} รายการยังไม่เคลียร์`;
-}
-
-// ===================================================================
-// 9) แสดงรายการค่าใช้จ่าย
-// ===================================================================
-function formatDate(ts) {
-  const d = new Date(ts);
-  const now = new Date();
-  const isToday = d.toDateString() === now.toDateString();
-  if (isToday) return "วันนี้";
-  return new Intl.DateTimeFormat("th-TH-u-ca-gregory", { day: "numeric", month: "short" }).format(d);
-}
-
 function renderExpenses() {
   const list = el("expense-list");
   const empty = el("empty-state");
@@ -215,30 +175,18 @@ function renderExpenses() {
 
   list.innerHTML = state.expenses.map((exp) => {
     const payerName = exp.paidBy === "a" ? state.nameA : state.nameB;
-    const payerInitial = (payerName || "?").trim().charAt(0).toUpperCase();
-    const payerColor = exp.paidBy === "a" ? "var(--a)" : "var(--b)";
+    const dotColor = exp.paidBy === "a" ? "var(--a)" : "var(--b)";
     const splitLabel = exp.split === "full" ? "ออกให้ทั้งหมด" : "หารครึ่ง";
     const amt = Number(exp.amount) || 0;
-    const cat = CATEGORIES[exp.category] || CATEGORIES.other;
-    const settled = !!exp.settled;
-
     return `
-      <div class="entry ${settled ? "settled" : ""}">
-        <div class="cat-icon" style="background:${cat.bg}">${cat.icon}</div>
+      <div class="entry">
+        <span class="who-dot" style="background:${dotColor}"></span>
         <div class="details">
           <div class="title">${escapeHtml(exp.title)}</div>
-          <div class="meta">
-            <span class="payer-avatar" style="background:${payerColor}">${payerInitial}</span>
-            ${payerName} · ${splitLabel} · ${formatDate(exp.createdAt)}
-          </div>
+          <div class="meta">${payerName} จ่าย · ${splitLabel}</div>
         </div>
-        <div class="amount-col">
-          <div class="amount">฿${amt.toLocaleString()}</div>
-          <div style="display:flex; gap:6px; align-items:center;">
-            <button class="settle-btn ${settled ? "done" : ""}" data-id="${exp.id}" data-settled="${settled}" aria-label="ทำเครื่องหมายว่าเคลียร์แล้ว">✓</button>
-            <button class="delete-btn" data-id="${exp.id}" aria-label="ลบรายการ">×</button>
-          </div>
-        </div>
+        <div class="amount">฿${amt.toLocaleString()}</div>
+        <button class="delete-btn" data-id="${exp.id}" aria-label="ลบรายการ">×</button>
       </div>
     `;
   }).join("");
@@ -246,13 +194,6 @@ function renderExpenses() {
   list.querySelectorAll(".delete-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       await deleteDoc(doc(db, "rooms", state.roomId, "expenses", btn.dataset.id));
-    });
-  });
-
-  list.querySelectorAll(".settle-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const nowSettled = btn.dataset.settled === "true";
-      await updateDoc(doc(db, "rooms", state.roomId, "expenses", btn.dataset.id), { settled: !nowSettled });
     });
   });
 }
@@ -264,11 +205,10 @@ function escapeHtml(str) {
 }
 
 // ===================================================================
-// 10) ฟอร์มเพิ่มรายการ (bottom sheet)
+// 8) ฟอร์มเพิ่มรายการ (bottom sheet)
 // ===================================================================
 let pickedWho = null;
 let pickedSplit = "50-50";
-let pickedCategory = "dining";
 
 el("fab-add").addEventListener("click", () => openSheet());
 el("sheet-cancel").addEventListener("click", () => closeSheet());
@@ -292,27 +232,15 @@ document.querySelectorAll('.split-choice button').forEach((btn) => {
   });
 });
 
-document.querySelectorAll('#category-choice button').forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll('#category-choice button').forEach((b) => b.classList.remove("selected"));
-    btn.classList.add("selected");
-    pickedCategory = btn.dataset.category;
-  });
-});
-
 function openSheet() {
   el("add-form").reset();
   pickedWho = state.who; // default: assume you paid
   pickedSplit = "50-50";
-  pickedCategory = "dining";
   document.querySelectorAll('#add-form .who-choice button').forEach((b) => {
     b.classList.toggle("selected", b.dataset.who === pickedWho);
   });
   document.querySelectorAll('.split-choice button').forEach((b) => {
     b.classList.toggle("selected", b.dataset.split === "50-50");
-  });
-  document.querySelectorAll('#category-choice button').forEach((b) => {
-    b.classList.toggle("selected", b.dataset.category === "dining");
   });
   el("sheet-backdrop").classList.add("open");
 }
@@ -334,10 +262,8 @@ el("add-form").addEventListener("submit", async (e) => {
   await addDoc(collection(db, "rooms", state.roomId, "expenses"), {
     title,
     amount,
-    category: pickedCategory,
     paidBy: pickedWho,
     split: pickedSplit,
-    settled: false,
     createdAt: Date.now(),
   });
 
@@ -346,7 +272,7 @@ el("add-form").addEventListener("submit", async (e) => {
 });
 
 // ===================================================================
-// 11) toast เล็กๆ แจ้งผล
+// 9) toast เล็กๆ แจ้งผล
 // ===================================================================
 let toastTimer;
 function showToast(msg) {
@@ -358,14 +284,19 @@ function showToast(msg) {
 }
 
 // ===================================================================
-// 12) เริ่มโปรแกรม
+// 10) เริ่มโปรแกรม: ถ้ามีห้องจำไว้แล้วให้เข้าห้องเลย ไม่งั้นโชว์หน้าตั้งค่า
 // ===================================================================
 if (state.roomId && state.who) {
   enterRoom();
 }
 
+// ===================================================================
+// 11) ลงทะเบียน service worker เพื่อให้ใช้เป็น PWA ได้
+// ===================================================================
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    navigator.serviceWorker.register("./sw.js").catch(() => {
+      // ไม่ critical ถ้า register ไม่ได้ (เช่น เปิดจาก file:// ตอน dev)
+    });
   });
 }

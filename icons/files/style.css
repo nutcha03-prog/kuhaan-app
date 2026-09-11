@@ -1,0 +1,400 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --ink: #2B1416;
+  --paper: #FAF6F5;
+  --paper-dim: #F1E7E6;
+  --line: #ECD9DA;
+  --muted: #8A6F72;
+  --a: #C81E3A;   /* person A — red */
+  --b: #C98A2E;   /* person B — gold */
+  --brand-1: #E6394F;
+  --brand-2: #8F0F17;
+  --danger: #B23A3A;
+  --radius: 20px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Work Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, .display {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+button { font-family: inherit; }
+
+/* ================= Setup screen ================= */
+
+#setup-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  min-height: 100dvh;
+}
+
+#setup-screen.hidden { display: none; }
+
+.setup-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 28px;
+  padding: 32px 26px;
+  box-shadow: 0 20px 40px rgba(143, 15, 23, 0.1);
+}
+
+#setup-screen h1 {
+  font-size: 1.9rem;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+#setup-screen p.lede {
+  color: var(--muted);
+  margin: 0 0 26px;
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.field { margin-bottom: 18px; }
+
+.field label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--line);
+  background: transparent;
+  padding: 10px 2px;
+  font-size: 1.05rem;
+  color: var(--ink);
+  font-family: inherit;
+}
+
+.field input:focus {
+  outline: none;
+  border-bottom-color: var(--a);
+}
+
+.pill-row { display: flex; gap: 10px; }
+.pill-row .field { flex: 1; margin-bottom: 0; }
+
+button.primary {
+  margin-top: 20px;
+  width: 100%;
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 15px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(143, 15, 23, 0.25);
+}
+
+button.primary:disabled { opacity: 0.5; box-shadow: none; }
+
+.setup-note {
+  margin-top: 18px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.who-choice { display: flex; gap: 10px; }
+
+.who-choice button {
+  flex: 1;
+  border: 2px solid var(--line);
+  background: transparent;
+  border-radius: 999px;
+  padding: 12px 10px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.who-choice button.selected[data-who="a"] { border-color: var(--a); background: var(--a); color: #fff; }
+.who-choice button.selected[data-who="b"] { border-color: var(--b); background: var(--b); color: #fff; }
+
+/* ================= Main app ================= */
+
+#app-screen {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  padding-bottom: 108px; /* clears bottom-nav + fab */
+}
+
+#app-screen.active { display: flex; }
+
+.app-header { padding: 24px 24px 4px; }
+.app-header h1 { font-size: 1.7rem; }
+.app-header p { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+.finance-card {
+  margin: 20px;
+  border-radius: 28px;
+  padding: 26px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  box-shadow: 0 20px 40px rgba(143, 15, 23, 0.28);
+}
+
+.month-label { opacity: 0.85; font-size: 0.85rem; }
+
+.total-title {
+  margin-top: 14px;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.total-amount {
+  margin-top: 6px;
+  font-family: 'Fraunces', serif;
+  font-size: 2.7rem;
+  font-weight: 700;
+}
+
+.couple-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.person-card {
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  padding: 14px;
+  border-top: 3px solid transparent;
+}
+
+.person-card.person-a { border-top-color: rgba(255,255,255,0.85); }
+.person-card.person-b { border-top-color: #F5D68A; }
+
+.person-card small {
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.85;
+  font-size: 0.8rem;
+}
+
+.person-card strong {
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+}
+
+.debt-card {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 18px;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.debt-card strong { font-family: 'Fraunces', serif; }
+
+/* ================= Expense list ================= */
+
+.expense-section { padding: 4px 20px 10px; }
+
+.section-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 14px;
+}
+
+.empty-state {
+  display: none;
+  padding: 40px 10px;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.6;
+  background: #fff;
+  border-radius: 20px;
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 16px rgba(43, 20, 22, 0.06);
+}
+
+.entry .who-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.entry .details { flex: 1; min-width: 0; }
+.entry .details .title { font-weight: 600; }
+.entry .details .meta { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+.entry .amount { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.05rem; color: var(--a); white-space: nowrap; }
+
+.entry .delete-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+}
+
+/* ================= FAB + bottom nav ================= */
+
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: 90px;
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+  color: #fff;
+  font-size: 1.8rem;
+  line-height: 1;
+  box-shadow: 0 12px 24px rgba(143, 15, 23, 0.35);
+  cursor: pointer;
+  z-index: 5;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 68px;
+  background: #fff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -6px 20px rgba(43, 20, 22, 0.06);
+}
+
+.bottom-nav button {
+  border: none;
+  background: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.bottom-nav button.active { opacity: 1; transform: scale(1.1); }
+
+/* ================= Add-expense sheet ================= */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 20, 22, 0.45);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 10;
+}
+
+.sheet-backdrop.open { display: flex; }
+
+.sheet {
+  background: var(--paper);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 26px 26px 0 0;
+  padding: 22px 22px 28px;
+  max-height: 88dvh;
+  overflow-y: auto;
+}
+
+.sheet h2 { font-size: 1.3rem; margin-bottom: 18px; }
+
+.split-choice { display: flex; gap: 8px; margin-bottom: 22px; }
+
+.split-choice button {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.split-choice button.selected {
+  border-color: var(--a);
+  color: var(--a);
+  font-weight: 600;
+}
+
+.sheet-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+.sheet-actions button.secondary {
+  flex: 1;
+  background: transparent;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  padding: 14px;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sheet-actions button.primary { flex: 2; margin-top: 0; }
+
+/* ================= Toast ================= */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 110px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 20;
+}
+
+.toast.show { opacity: 1; }
+
+@media (min-width: 640px) {
+  .app-header { padding: 32px 32px 4px; }
+  .finance-card { margin: 20px 32px; }
+  .expense-section { padding: 4px 32px 10px; }
+}
