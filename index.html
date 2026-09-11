@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>คู่หาร — หารค่าใช้จ่ายกับแฟน</title>
-  <meta name="theme-color" content="#22314D" />
+  <meta name="theme-color" content="#9F1111" />
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
@@ -14,112 +14,127 @@
 
   <!-- ===================== หน้าตั้งค่าห้อง ===================== -->
   <div id="setup-screen">
-    <h1>คู่หาร</h1>
-    <p class="lede">ตั้งห้องเดียวกันกับแฟน แล้วใช้จดค่าใช้จ่ายร่วมกันได้เลย ไม่ต้องสมัครสมาชิก</p>
+    <div class="setup-card">
 
-    <form id="setup-form">
-      <div class="field">
-        <label for="room-code">รหัสห้อง (ตั้งเองได้ ให้แฟนใช้รหัสเดียวกัน)</label>
-        <input id="room-code" type="text" placeholder="เช่น nanbowbow2026" required />
+      <div class="blob-art" aria-hidden="true">
+        <span class="blob blob-1"></span>
+        <span class="blob blob-2"></span>
+        <span class="blob blob-3"></span>
+        <span class="blob blob-4"></span>
       </div>
 
-      <div class="pill-row">
+      <h1>คู่หาร</h1>
+      <p class="lede">จัดการค่าใช้จ่ายร่วมกัน ง่ายๆ ในที่เดียว ไม่ต้องสมัครสมาชิก</p>
+
+      <div class="tab-switch">
+        <button type="button" class="tab-btn active" data-tab="join">เข้าห้องเดิม</button>
+        <button type="button" class="tab-btn" data-tab="create">สร้างห้องใหม่</button>
+      </div>
+
+      <form id="setup-form">
         <div class="field">
-          <label for="name-a">ชื่อคนที่ 1</label>
-          <input id="name-a" type="text" placeholder="เช่น แนน" />
+          <label for="room-code">รหัสห้อง</label>
+          <input id="room-code" type="text" placeholder="เช่น nanbowbow2026" required />
         </div>
+
+        <div class="pill-row" id="name-fields">
+          <div class="field">
+            <label for="name-a">ชื่อคนที่ 1</label>
+            <input id="name-a" type="text" placeholder="เช่น แนน" />
+          </div>
+          <div class="field">
+            <label for="name-b">ชื่อคนที่ 2</label>
+            <input id="name-b" type="text" placeholder="เช่น โบว์" />
+          </div>
+        </div>
+
         <div class="field">
-          <label for="name-b">ชื่อคนที่ 2</label>
-          <input id="name-b" type="text" placeholder="เช่น โบว์" />
+          <label>คุณคือใคร</label>
+          <div class="who-choice">
+            <button type="button" data-who="a">คนที่ 1</button>
+            <button type="button" data-who="b">คนที่ 2</button>
+          </div>
         </div>
-      </div>
 
-      <div class="field">
-        <label>คุณคือใคร</label>
-        <div class="who-choice">
-          <button type="button" data-who="a">คนที่ 1</button>
-          <button type="button" data-who="b">คนที่ 2</button>
-        </div>
-      </div>
+        <button type="submit" class="primary" id="setup-submit">เข้าห้อง</button>
+      </form>
 
-      <button type="submit" class="primary">เข้าห้อง</button>
-    </form>
-
-    <p class="setup-note">ถ้าห้องนี้มีอยู่แล้ว ระบบจะใช้ชื่อที่ตั้งไว้ตอนสร้างห้องครั้งแรก ช่องชื่อจะถูกข้ามไปเอง</p>
+      <p class="setup-note" id="setup-note">ถ้าห้องนี้มีอยู่แล้ว ระบบจะใช้ชื่อที่ตั้งไว้ตอนสร้างห้องครั้งแรก ช่องชื่อจะถูกข้ามไปเอง</p>
+    </div>
   </div>
 
   <!-- ===================== หน้าแอปหลัก ===================== -->
-  <div id="app-screen" class="active">
+  <div id="app-screen">
 
-  <header class="app-header">
-    <div>
-      <h1>💑 คู่หาร</h1>
-      <p>ค่าใช้จ่ายของเราสองคน</p>
-    </div>
-  </header>
+    <header class="app-header">
+      <span class="logo-mark">คห</span>
+      <div>
+        <h1>คู่หาร</h1>
+        <p id="app-subtitle">ค่าใช้จ่ายร่วมกัน</p>
+      </div>
+    </header>
 
-  <section class="finance-card">
+    <section class="finance-card">
 
-    <div class="month-label">
-      กันยายน 2026 · Shared Expenses
-    </div>
+      <div class="month-label" id="month-label">เดือนนี้</div>
+      <div class="total-title">ยอดใช้จ่ายเดือนนี้</div>
+      <div class="total-amount"><span id="month-total-amount">฿0</span></div>
 
-    <div class="total-title">
-      ค่าใช้จ่ายเดือนนี้
-    </div>
-
-    <div class="total-amount">
-      <span id="balance-amount">฿0</span>
-    </div>
-
-    <div class="couple-grid">
-
-      <div class="person-card">
-        <small data-name-slot="a">คนที่ 10</small>
-        <strong id="person-a-total">฿0</strong>
+      <div class="paid-rows">
+        <div class="paid-row">
+          <div class="paid-row-top">
+            <span data-name-slot="a">คนที่ 1</span> จ่ายไปแล้ว
+            <strong id="person-a-total">฿0</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill fill-a" id="progress-a"></div>
+          </div>
+        </div>
+        <div class="paid-row">
+          <div class="paid-row-top">
+            <span data-name-slot="b">คนที่ 2</span> จ่ายไปแล้ว
+            <strong id="person-b-total">฿0</strong>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill fill-b" id="progress-b"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="person-card">
-        <small data-name-slot="b">คนที่ 2</small>
-        <strong id="person-b-total">฿0</strong>
+      <div class="pending-grid">
+        <div class="pending-card">
+          <div class="pending-label">⏳ <span data-name-slot="a">คนที่ 1</span> ค้างรับ</div>
+          <div class="pending-amount" id="pending-a-amount">฿0</div>
+          <div class="pending-count" id="pending-a-count">ไม่มีรายการค้าง</div>
+        </div>
+        <div class="pending-card">
+          <div class="pending-label">⏳ <span data-name-slot="b">คนที่ 2</span> ค้างรับ</div>
+          <div class="pending-amount" id="pending-b-amount">฿0</div>
+          <div class="pending-count" id="pending-b-count">ไม่มีรายการค้าง</div>
+        </div>
       </div>
 
-    </div>
+    </section>
 
-    <div class="debt-card">
-      <div id="balance-line">
-        กำลังคำนวณ...
-      </div>
-    </div>
+    <section class="expense-section">
 
-  </section>
+      <div class="section-title">รายการล่าสุด</div>
 
-  <section class="expense-section">
+      <div id="expense-list"></div>
 
-    <div class="section-title">
-      รายการล่าสุด
-    </div>
+      <div id="empty-state">ยังไม่มีรายการค่าใช้จ่าย<br/>กดปุ่ม + เพื่อเริ่มจดรายการแรก</div>
 
-    <div id="expense-list"></div>
+    </section>
 
-    <div id="empty-state">
-      ยังไม่มีรายการค่าใช้จ่าย
-    </div>
+    <button id="fab-add" class="fab" aria-label="เพิ่มรายการ">+</button>
 
-  </section>
+    <nav class="bottom-nav">
+      <button class="active" aria-label="หน้าแรก">🏠</button>
+      <button aria-label="รายการทั้งหมด">📋</button>
+      <button id="change-room-btn" aria-label="เปลี่ยนห้อง">⚙️</button>
+    </nav>
 
-  <button id="fab-add" class="fab">
-    +
-  </button>
-
-  <nav class="bottom-nav">
-    <button class="active">🏠</button>
-    <button>📋</button>
-    <button>📊</button>
-    <button id="change-room-btn">⚙️</button>
-  </nav>
-
-</div>
+  </div>
 
   <!-- ===================== ฟอร์มเพิ่มรายการ (bottom sheet) ===================== -->
   <div id="sheet-backdrop" class="sheet-backdrop">
@@ -134,6 +149,18 @@
         <div class="field">
           <label for="expense-amount">จำนวนเงิน (บาท)</label>
           <input id="expense-amount" type="number" min="0" step="0.01" placeholder="0" required />
+        </div>
+
+        <div class="field">
+          <label>หมวดหมู่</label>
+          <div class="category-choice" id="category-choice">
+            <button type="button" data-category="dining" class="selected"><span class="cat-ic">🍽️</span>อาหาร</button>
+            <button type="button" data-category="home"><span class="cat-ic">🧹</span>ของใช้บ้าน</button>
+            <button type="button" data-category="utilities"><span class="cat-ic">📶</span>ค่าน้ำ-ไฟ-เน็ต</button>
+            <button type="button" data-category="pets"><span class="cat-ic">🐾</span>สัตว์เลี้ยง</button>
+            <button type="button" data-category="shopping"><span class="cat-ic">🛍️</span>ช้อปปิ้ง</button>
+            <button type="button" data-category="other"><span class="cat-ic">📦</span>อื่นๆ</button>
+          </div>
         </div>
 
         <div class="field">
