@@ -155,9 +155,9 @@ button { font-family: inherit; }
 button.primary {
   margin-top: 20px;
   width: 100%;
-  background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-  color: #fff;
-  border: none;
+  background: #ffffff;
+  color: var(--ink);
+  border: 1px solid #E3E8E6;
   border-radius: 999px;
   padding: 15px 20px;
   font-size: 1rem;
@@ -245,11 +245,8 @@ button.primary:disabled { opacity: 0.5; box-shadow: none; }
   opacity: 0.9;
 }
 
-.total-amount {
-  margin-top: 4px;
-  font-family: 'Fraunces', serif;
-  font-size: 2.6rem;
-  font-weight: 700;
+.total-amount{
+  color: var(--a);
 }
 
 .paid-rows { margin-top: 22px; display: flex; flex-direction: column; gap: 14px; }

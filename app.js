@@ -38,9 +38,13 @@ const CATEGORIES = {
 // ===================================================================
 let state = {
   roomId: localStorage.getItem("kuhaan_room") || "",
-  who: localStorage.getItem("kuhaan_who") || "", // 'a' or 'b'
+  who: localStorage.getItem("kuhaan_who") || "",
   nameA: "",
   nameB: "",
+
+  accountA: "0478389779",
+  accountB: "0478389779",
+
   expenses: [],
 };
 
@@ -228,12 +232,37 @@ function renderPending() {
   }
 
   
-  el("pending-a-amount").textContent = `฿${Math.round(amtA).toLocaleString()}`;
-  el("pending-a-count").textContent = countA === 0 ? "ไม่มีรายการค้าง" : `${countA} รายการยังไม่เคลียร์`;
-  el("pending-b-amount").textContent = `฿${Math.round(amtB).toLocaleString()}`;
-  el("pending-b-count").textContent = countB === 0 ? "ไม่มีรายการค้าง" : `${countB} รายการยังไม่เคลียร์`;
-}
+const pendingA = el("pending-a-amount");
+const pendingB = el("pending-b-amount");
 
+pendingA.innerHTML = `
+  <span style="cursor:pointer;text-decoration:underline">
+    ฿${Math.round(amtA).toLocaleString()}
+  </span>
+`;
+
+pendingB.innerHTML = `
+  <span style="cursor:pointer;text-decoration:underline">
+    ฿${Math.round(amtB).toLocaleString()}
+  </span>
+`;
+
+pendingA.onclick = () => {
+  navigator.clipboard.writeText(state.accountA);
+  showToast("คัดลอกเลขบัญชีแล้ว");
+};
+
+pendingB.onclick = () => {
+  navigator.clipboard.writeText(state.accountB);
+  showToast("คัดลอกเลขบัญชีแล้ว");
+};
+
+el("pending-a-count").textContent =
+  countA === 0 ? "ไม่มีรายการค้าง" : `${countA} รายการยังไม่เคลียร์`;
+
+el("pending-b-count").textContent =
+  countB === 0 ? "ไม่มีรายการค้าง" : `${countB} รายการยังไม่เคลียร์`;
+}
 // ===================================================================
 // 9) แสดงรายการค่าใช้จ่าย
 // ===================================================================
