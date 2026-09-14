@@ -39,11 +39,9 @@ const CATEGORIES = {
 let state = {
   roomId: localStorage.getItem("kuhaan_room") || "",
   who: localStorage.getItem("kuhaan_who") || "",
-  nameA: "",
-  nameB: "",
 
-  accountA: "0478389779",
-  accountB: "0478389779",
+  nameA: "Nutcha",
+  nameB: "Ram",
 
   expenses: [],
 };
@@ -58,7 +56,6 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
     document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     const isCreate = btn.dataset.tab === "create";
-    el("name-fields").classList.toggle("hidden", !isCreate);
     el("setup-submit").textContent = isCreate ? "สร้างห้อง" : "เข้าห้อง";
     el("setup-note").textContent = isCreate
       ? "ตั้งชื่อทั้งสองคนไว้ก่อน แล้วส่งรหัสห้องนี้ให้แฟนมาเข้าที่แท็บ \"เข้าห้องเดิม\""
@@ -72,8 +69,8 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 el("setup-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const roomId = el("room-code").value.trim();
-  const nameA = el("name-a").value.trim() || "คนที่ 1";
-  const nameB = el("name-b").value.trim() || "คนที่ 2";
+  const nameA = "Nutcha";
+  const nameB = "Ram";
   const who = document.querySelector('#setup-form .who-choice button.selected')?.dataset.who;
 
   if (!roomId || !who) {
