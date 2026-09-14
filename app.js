@@ -119,9 +119,18 @@ async function enterRoom() {
   state.nameB = room.nameB;
 
   el("setup-screen").classList.add("hidden");
+
   el("app-screen").classList.add("active");
-  el("app-subtitle").textContent = `ห้อง: ${state.roomId}`;
-  el("month-label").textContent = currentMonthLabel();
+
+const subtitle = el("app-subtitle");
+if (subtitle) {
+  subtitle.textContent = `ห้อง: ${state.roomId}`;
+}
+
+const monthLabel = el("month-label");
+if (monthLabel) {
+  monthLabel.textContent = currentMonthLabel();
+}
 
   document.querySelectorAll('[data-name-slot="a"]').forEach((n) => (n.textContent = room.nameA));
   document.querySelectorAll('[data-name-slot="b"]').forEach((n) => (n.textContent = room.nameB));
@@ -357,26 +366,40 @@ function closeSheet() {
 
 el("add-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const title = el("expense-title").value.trim();
-  const amount = Number(el("expense-amount").value);
 
-  if (!title || !amount || !pickedWho) {
-    showToast("กรอกให้ครบก่อนนะ");
-    return;
+  try {
+    const title = el("expense-title").value.trim();
+    const amount = Number(el("expense-amount").value);
+
+    console.log("กำลังบันทึก", {
+      title,
+      amount,
+      room: state.roomId,
+      paidBy: pickedWho
+    });
+
+    const docRef = await addDoc(
+      collection(db, "rooms", state.roomId, "expenses"),
+      {
+        title,
+        amount,
+        category: pickedCategory,
+        paidBy: pickedWho,
+        split: pickedSplit,
+        settled: false,
+        createdAt: Date.now(),
+      }
+    );
+
+    console.log("บันทึกสำเร็จ", docRef.id);
+
+    closeSheet();
+    showToast("บันทึกแล้ว");
+
+  } catch (err) {
+    console.error("SAVE ERROR:", err);
+    alert(err.message);
   }
-
-  await addDoc(collection(db, "rooms", state.roomId, "expenses"), {
-    title,
-    amount,
-    category: pickedCategory,
-    paidBy: pickedWho,
-    split: pickedSplit,
-    settled: false,
-    createdAt: Date.now(),
-  });
-
-  closeSheet();
-  showToast("บันทึกแล้ว");
 });
 
 // ===================================================================
